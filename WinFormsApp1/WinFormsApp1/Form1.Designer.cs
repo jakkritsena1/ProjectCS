@@ -52,7 +52,7 @@
             menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, mapToolStripMenuItem, helpToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(1029, 24);
+            menuStrip1.Size = new Size(1584, 24);
             menuStrip1.TabIndex = 0;
             menuStrip1.Text = "menuStrip1";
             // 
@@ -134,7 +134,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(189, 104);
+            label1.Location = new Point(202, 104);
             label1.Name = "label1";
             label1.Size = new Size(149, 15);
             label1.TabIndex = 8;
@@ -143,7 +143,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(702, 104);
+            label2.Location = new Point(992, 104);
             label2.Name = "label2";
             label2.Size = new Size(144, 15);
             label2.TabIndex = 9;
@@ -156,13 +156,13 @@
             table1.AllowUserToResizeColumns = false;
             table1.AllowUserToResizeRows = false;
             table1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            table1.Location = new Point(29, 122);
+            table1.Location = new Point(42, 122);
             table1.Name = "table1";
             table1.ReadOnly = true;
             table1.RowHeadersWidth = 100;
             table1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             table1.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            table1.Size = new Size(454, 502);
+            table1.Size = new Size(700, 550);
             table1.TabIndex = 6;
             table1.CellContentClick += table1_CellContentClick;
             // 
@@ -173,18 +173,18 @@
             table2.AllowUserToResizeColumns = false;
             table2.AllowUserToResizeRows = false;
             table2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            table2.Location = new Point(536, 122);
+            table2.Location = new Point(826, 122);
             table2.Name = "table2";
             table2.ReadOnly = true;
             table2.RowHeadersWidth = 100;
             table2.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             table2.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            table2.Size = new Size(454, 502);
+            table2.Size = new Size(700, 550);
             table2.TabIndex = 10;
             // 
             // button1
             // 
-            button1.Location = new Point(29, 641);
+            button1.Location = new Point(42, 701);
             button1.Name = "button1";
             button1.Size = new Size(102, 29);
             button1.TabIndex = 11;
@@ -196,7 +196,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1029, 691);
+            ClientSize = new Size(1584, 761);
             Controls.Add(button1);
             Controls.Add(table2);
             Controls.Add(label2);
