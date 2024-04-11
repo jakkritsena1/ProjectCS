@@ -1,4 +1,4 @@
-﻿namespace WinFormsApp1
+﻿namespace ProjectCS
 {
     partial class Form1
     {

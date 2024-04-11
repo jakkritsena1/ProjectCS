@@ -1,4 +1,4 @@
-namespace WinFormsApp1
+namespace ProjectCS
 {
     internal static class Program
     {

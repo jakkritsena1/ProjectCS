@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
 
-namespace WinFormsApp1
+namespace ProjectCS
 {
     public partial class Form1 : Form
     {
