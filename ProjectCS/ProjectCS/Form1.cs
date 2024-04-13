@@ -59,8 +59,8 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "83.2", "87.3", "91.7", "92.2", "85.0", "72.8", "71.8", "71.8", "71.8", "71.8", "71.8"},
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
-
         private string selectedFile;
+        private string[] FileLines;
         private int index = 0;
         public Form1()
         {
@@ -112,6 +112,7 @@ namespace ProjectCS
                 if (result == DialogResult.OK)
                 {
                     string selectedFile = openfile.FileName;
+                    FileLines = readfile(selectedFile);
                     radioButton2.Enabled = true;
                     radioButton3.Enabled = true;
                     radioButton4.Enabled = true;
@@ -141,25 +142,27 @@ namespace ProjectCS
             radioButton5.Enabled = false;
         }
 
-        private void feedforward_netural_network(object sender, EventArgs e)
+        private void data_analyse(object sender, EventArgs e)
         {
-
-        }
-
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
-        {
-            if (selectedFile != null && File.Exists(selectedFile)) 
+            if (FileLines != null)
             {
-                string[] selectFileLines = File.ReadAllLines(selectedFile);
-                foreach (string line in selectFileLines)
+                foreach (string line in FileLines) 
                 {
                     string[] fields = line.Split(',');
                 }
             }
-            else
+        }
+        private string[] readfile(string selectedFile)
+        {
+            if ( File.Exists(selectedFile))
             {
-                MessageBox.Show("Please select a valid CSV file."); 
+                FileLines = File.ReadAllLines(selectedFile);
             }
+            return FileLines;
+        }
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+          data_analyse(sender, e);
         }
     }
 }
