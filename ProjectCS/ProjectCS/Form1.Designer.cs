@@ -42,6 +42,7 @@
             table1 = new DataGridView();
             table2 = new DataGridView();
             button1 = new Button();
+            textBox1 = new TextBox();
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)table1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)table2).BeginInit();
@@ -192,11 +193,19 @@
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(734, 705);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(100, 23);
+            textBox1.TabIndex = 12;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 761);
+            Controls.Add(textBox1);
             Controls.Add(button1);
             Controls.Add(table2);
             Controls.Add(label2);
@@ -236,5 +245,6 @@
         private DataGridView table1;
         private DataGridView table2;
         private Button button1;
+        private TextBox textBox1;
     }
 }

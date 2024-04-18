@@ -3,12 +3,14 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
+using System.Text;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ProjectCS
 {
     public partial class Form1 : Form
     {
-        private String[] tps = { "3.0","4.0", "5.0", "7.5", "10.0", "15.0", "20.0", "25.0", "30.0", "40.0", "60.0", "80.0", "90.0", "95.0", "100.0" };
+        private String[] tps = { "3.0", "4.0", "5.0", "7.5", "10.0", "15.0", "20.0", "25.0", "30.0", "40.0", "60.0", "80.0", "90.0", "95.0", "100.0" };
         private String[] rpm = { "700", "850", "1000", "1125", "1250", "1500", "1750", "2000", "2250", "2500", "2750", "3000", "3250", "3500", "3750", "4000", "4500", "5000", "5500", "6000", "6500" };
         private string[,] dataSetVeFront =
                     {
@@ -59,8 +61,6 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "83.2", "87.3", "91.7", "92.2", "85.0", "72.8", "71.8", "71.8", "71.8", "71.8", "71.8"},
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
-        private string selectedFile;
-        private string[] FileLines;
         private int index = 0;
         public Form1()
         {
@@ -106,22 +106,10 @@ namespace ProjectCS
             using (OpenFileDialog openfile = new OpenFileDialog())
             {
                 openfile.InitialDirectory = "c:/";
-                openfile.Filter = "Excel Files (*.csv*)|*.csv*";
-                DialogResult result = openfile.ShowDialog();
-
-                if (result == DialogResult.OK)
+                openfile.Filter = "CSV Files (*.csv)|*.csv";
+                if (openfile.ShowDialog() == DialogResult.OK)
                 {
-                    string selectedFile = openfile.FileName;
-                    FileLines = readfile(selectedFile);
-                    radioButton2.Enabled = true;
-                    radioButton3.Enabled = true;
-                    radioButton4.Enabled = true;
-                    radioButton5.Enabled = true;
-                }
-                else
-                {
-                    radioButton2.Enabled = false;
-                    MessageBox.Show(this,"Invalid file.");
+                   
                 }
             }
         }
@@ -142,27 +130,13 @@ namespace ProjectCS
             radioButton5.Enabled = false;
         }
 
-        private void data_analyse(object sender, EventArgs e)
+        private void data_analyst( object sender, EventArgs e)
         {
-            if (FileLines != null)
-            {
-                foreach (string line in FileLines) 
-                {
-                    string[] fields = line.Split(',');
-                }
-            }
-        }
-        private string[] readfile(string selectedFile)
-        {
-            if ( File.Exists(selectedFile))
-            {
-                FileLines = File.ReadAllLines(selectedFile);
-            }
-            return FileLines;
+
         }
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
-          data_analyse(sender, e);
+
         }
     }
 }
