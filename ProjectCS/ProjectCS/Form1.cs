@@ -5,6 +5,10 @@ using System.IO;
 using Microsoft.VisualBasic.FileIO;
 using System.Text;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Formats.Asn1;
+using System.Globalization;
+using CsvHelper;
+using System.Reflection;
 
 namespace ProjectCS
 {
@@ -62,6 +66,8 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
         private int index = 0;
+        private string file;
+        private string[] file_lines;
         public Form1()
         {
             InitializeComponent();
@@ -109,11 +115,29 @@ namespace ProjectCS
                 openfile.Filter = "CSV Files (*.csv)|*.csv";
                 if (openfile.ShowDialog() == DialogResult.OK)
                 {
-                   
+                    string filePath = openfile.FileName;
+
+                    if (File.Exists(filePath))
+                    {
+                        int rowCount = 0;
+                        using (var reader = new StreamReader(filePath))
+                        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                        {
+                            while (csv.Read())
+                            {
+                                rowCount++;
+                            }
+                        }
+                        MessageBox.Show("Number of rows: " + rowCount);
+                        radioButton2.Enabled = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("File not found: " + filePath);
+                    }
                 }
             }
         }
-
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             for (int i = 0; i < 21; i++)
@@ -130,13 +154,8 @@ namespace ProjectCS
             radioButton5.Enabled = false;
         }
 
-        private void data_analyst( object sender, EventArgs e)
-        {
-
-        }
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
-
         }
     }
 }
