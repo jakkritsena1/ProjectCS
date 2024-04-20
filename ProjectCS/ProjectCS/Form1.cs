@@ -66,8 +66,7 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
         private int index = 0;
-        private string file;
-        private string[] file_lines;
+        private string[,] lambda_value_array = new string[15, 21];
         public Form1()
         {
             InitializeComponent();
@@ -119,16 +118,32 @@ namespace ProjectCS
 
                     if (File.Exists(filePath))
                     {
-                        int rowCount = 0;
+                        List<dynamic> records;
                         using (var reader = new StreamReader(filePath))
                         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                         {
-                            while (csv.Read())
+                                records = csv.GetRecords<dynamic>().ToList();
+                        }
+                        List<float> lambda_value = new List<float>();
+                        foreach (var record in records)
+                        {
+                            var recordDict = record as IDictionary<string, object>;
+                            if (recordDict != null && recordDict.ContainsKey("d_lamda_desired"))
                             {
-                                rowCount++;
+                                if (recordDict["d_lamda_desired"] != null && float.TryParse(recordDict["d_lamda_desired"].ToString(), out float lambda))
+                                {
+                                    lambda_value.Add(lambda);
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Invalid value in d_lamda_desired column.");
+                                }
                             }
                         }
-                        MessageBox.Show("Number of rows: " + rowCount);
+                        float lambda_value_average = lambda_value.Average();
+                        string lambda_value_str = lambda_value_average.ToString("0.0000");
+                        lambda_value_array[0,0] = lambda_value_str;
+                        MessageBox.Show("Average lambda value: " + lambda_value_str);
                         radioButton2.Enabled = true;
                     }
                     else
@@ -156,6 +171,7 @@ namespace ProjectCS
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
+            //MessageBox.Show("" + lambda_value_array[0,0]);
         }
     }
 }
