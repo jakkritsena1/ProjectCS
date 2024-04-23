@@ -164,7 +164,6 @@
             table1.SelectionMode = DataGridViewSelectionMode.CellSelect;
             table1.Size = new Size(700, 550);
             table1.TabIndex = 6;
-            table1.CellContentClick += table1_CellContentClick;
             // 
             // table2
             // 

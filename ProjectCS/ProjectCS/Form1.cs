@@ -66,7 +66,8 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
         private int index = 0;
-        private string[,] lambda_value_array = new string[15, 21];
+        private string[,] NewVEs_Front = new string[21,15];
+        List<float> lambda_value = new List<float>();
         public Form1()
         {
             InitializeComponent();
@@ -100,12 +101,6 @@ namespace ProjectCS
             }
 
         }
-
-        private void table1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openfile = new OpenFileDialog())
@@ -115,41 +110,8 @@ namespace ProjectCS
                 if (openfile.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openfile.FileName;
-
-                    if (File.Exists(filePath))
-                    {
-                        List<dynamic> records;
-                        using (var reader = new StreamReader(filePath))
-                        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-                        {
-                                records = csv.GetRecords<dynamic>().ToList();
-                        }
-                        List<float> lambda_value = new List<float>();
-                        foreach (var record in records)
-                        {
-                            var recordDict = record as IDictionary<string, object>;
-                            if (recordDict != null && recordDict.ContainsKey("d_lamda_desired"))
-                            {
-                                if (recordDict["d_lamda_desired"] != null && float.TryParse(recordDict["d_lamda_desired"].ToString(), out float lambda))
-                                {
-                                    lambda_value.Add(lambda);
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Invalid value in d_lamda_desired column.");
-                                }
-                            }
-                        }
-                        float lambda_value_average = lambda_value.Average();
-                        string lambda_value_str = lambda_value_average.ToString("0.0000");
-                        lambda_value_array[0,0] = lambda_value_str;
-                        MessageBox.Show("Average lambda value: " + lambda_value_str);
-                        radioButton2.Enabled = true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("File not found: " + filePath);
-                    }
+                    List<dynamic> records = ReadCSVFile(filePath);
+                    ProcessCsvRecords(records);
                 }
             }
         }
@@ -171,7 +133,89 @@ namespace ProjectCS
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
-            //MessageBox.Show("" + lambda_value_array[0,0]);
+            for (int i = 0; i < 21; i++)
+            {
+                for (int j = 0; j < 15; j++)
+                {
+                    table1.Rows[i].Cells[j].Value = NewVEs_Front[i, j];
+                }
+            }
+        }
+        private List<dynamic> ReadCSVFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                using (var reader = new StreamReader(filePath))
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    return csv.GetRecords<dynamic>().ToList();
+                }
+            }
+            else
+            {
+                MessageBox.Show("File not found: " + filePath);
+                return null;
+            }
+        }
+        private void ProcessCsvRecords(List<dynamic> records)
+        {
+            if (records == null) return;
+
+            foreach (var record in records)
+            {
+                ProcessRecord(record);
+            }
+        }
+
+        private void ProcessRecord(dynamic record)
+        {
+            var recordDict = record as IDictionary<string, object>;
+            if (recordDict == null ||
+                !recordDict.ContainsKey("d_eng_speed") ||
+                !recordDict.ContainsKey("d_tps_pct") ||
+                !recordDict.ContainsKey("d_lamda_desired"))
+            {
+                return;
+            }
+
+            for (int i = 0; i < 21; i++)
+            {
+                float engSpeed;
+                if (recordDict["d_eng_speed"] == null ||
+                    !float.TryParse(recordDict["d_eng_speed"].ToString(), out engSpeed) ||
+                    engSpeed < 0 || engSpeed > int.Parse(rpm[i]))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < 15; j++)
+                {
+                    float TPS;
+                    if (recordDict["d_tps_pct"] == null ||
+                        !float.TryParse(recordDict["d_tps_pct"].ToString(), out TPS) ||
+                        TPS < 0 || TPS > float.Parse(tps[j]))
+                    {
+                        continue;
+                    }
+
+                    float lambda;
+                    if (recordDict["d_lamda_desired"] != null &&
+                        float.TryParse(recordDict["d_lamda_desired"].ToString(), out lambda))
+                    {
+                        UpdateLambdaValueArray(i, j, lambda);
+                    }
+                }
+            }
+        }
+
+        private void UpdateLambdaValueArray(int i, int j, float lambda)
+        {
+            lambda_value.Add(lambda);
+            //สูตรคำนวณ 
+            float lambda_value_average = lambda_value.Count;
+            string lambda_value_str = lambda_value_average.ToString("0.0");
+            NewVEs_Front[i, j] = lambda_value_str;
+            radioButton2.Enabled = true;
         }
     }
 }
