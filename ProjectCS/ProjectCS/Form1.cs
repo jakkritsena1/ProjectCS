@@ -66,7 +66,7 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
         private int index = 0;
-        private string[,] NewVEs_Front = new string[21,15];
+        private string[,] NewVEs_Front = new string[21, 15];
         List<float> lambda_value = new List<float>();
         public Form1()
         {
@@ -177,32 +177,20 @@ namespace ProjectCS
             {
                 return;
             }
-
-            for (int i = 0; i < 21; i++)
+            float engSpeed, TPS, lambda;
+            float.TryParse(recordDict["d_eng_speed"].ToString(), out engSpeed);
+            float.TryParse(recordDict["d_tps_pct"].ToString(), out TPS);
+            float.TryParse(recordDict["d_lamda_desired"].ToString(), out lambda);
+            for (int i = 0; i < rpm.Length; i++)
             {
-                float engSpeed;
-                if (recordDict["d_eng_speed"] == null ||
-                    !float.TryParse(recordDict["d_eng_speed"].ToString(), out engSpeed) ||
-                    engSpeed < 0 || engSpeed > int.Parse(rpm[i]))
+                if (engSpeed <= float.Parse(rpm[i]))
                 {
-                    continue;
-                }
-
-                for (int j = 0; j < 15; j++)
-                {
-                    float TPS;
-                    if (recordDict["d_tps_pct"] == null ||
-                        !float.TryParse(recordDict["d_tps_pct"].ToString(), out TPS) ||
-                        TPS < 0 || TPS > float.Parse(tps[j]))
+                    for (int j = 0; j < tps.Length; j++)
                     {
-                        continue;
-                    }
-
-                    float lambda;
-                    if (recordDict["d_lamda_desired"] != null &&
-                        float.TryParse(recordDict["d_lamda_desired"].ToString(), out lambda))
-                    {
-                        UpdateLambdaValueArray(i, j, lambda);
+                        if (TPS <= float.Parse(tps[j]))
+                        {
+                            UpdateLambdaValueArray(i, j, lambda);
+                        }
                     }
                 }
             }
