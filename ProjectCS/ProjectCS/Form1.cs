@@ -9,6 +9,7 @@ using System.Formats.Asn1;
 using System.Globalization;
 using CsvHelper;
 using System.Reflection;
+using System.Xml;
 
 namespace ProjectCS
 {
@@ -68,6 +69,12 @@ namespace ProjectCS
         private int index = 0;
         private string[,] NewVEs_Front = new string[21, 15];
         List<float> lambda_value = new List<float>();
+        public class HDXRecord
+        {
+            public string RPM { get; set; }
+            public string TPS { get; set; }
+            public string LAMBDA { get; set; }
+        }
         public Form1()
         {
             InitializeComponent();
@@ -106,12 +113,20 @@ namespace ProjectCS
             using (OpenFileDialog openfile = new OpenFileDialog())
             {
                 openfile.InitialDirectory = "c:/";
-                openfile.Filter = "CSV Files (*.csv)|*.csv";
+                openfile.Filter = "CSV Files (*.csv)|*.csv|HDX Files (*.hdx)|*.hdx";
                 if (openfile.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openfile.FileName;
-                    List<dynamic> records = ReadCSVFile(filePath);
-                    ProcessCsvRecords(records);
+                    if (filePath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        List<dynamic> records = ReadCSVFile(filePath);
+                        ProcessCsvRecords(records);
+                    }
+                    else if (filePath.EndsWith(".hdx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        List<HDXRecord> hdxRecords = ReadHDXFile(filePath);
+                        ProcessRecordHDX(hdxRecords);
+                    }
                 }
             }
         }
@@ -141,6 +156,81 @@ namespace ProjectCS
                 }
             }
         }
+        private List<HDXRecord> ReadHDXFile(string filePath)
+        {
+            List<HDXRecord> hdxRecords = new List<HDXRecord>();
+            string rpm = ""; 
+            string tps = ""; 
+            string lambda = ""; 
+
+            XmlDocument xmlDoc = new XmlDocument();
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("File not found: " + filePath);
+                return hdxRecords;
+            }
+            try
+            {
+                xmlDoc.Load(filePath);
+                XmlNodeList dataItems = xmlDoc.SelectNodes("//dataItem");
+                foreach (XmlNode dataItem in dataItems)
+                {
+                    string name = dataItem.SelectSingleNode("Name").InnerText;
+                    string itemValueStr = dataItem.SelectSingleNode("ItemValue").InnerText;
+                    float itemValue;
+                    float.TryParse(itemValueStr, out itemValue);
+                    if (name == "d_eng_speed")
+                    {
+                        rpm = itemValue.ToString();
+                    }
+                    else if (name == "d_tps_pct")
+                    {
+                        tps = itemValue.ToString();
+                    }
+                    else if (name == "d_lamda_desired")
+                    {
+                        lambda = itemValue.ToString();
+                    }
+                        HDXRecord hdxRecord = new HDXRecord
+                        {
+                            RPM = rpm,
+                            TPS = tps,
+                            LAMBDA = lambda,
+                        };
+                        hdxRecords.Add(hdxRecord);
+                    }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading HDX file: " + ex.Message);
+            }
+
+            return hdxRecords;
+        }
+
+        private void ProcessRecordHDX(List<HDXRecord> hdxRecords)
+        {
+            foreach (var hdxRecord in hdxRecords)
+            {
+                float RPM, TPS, LAMBDA;
+                float.TryParse(hdxRecord.RPM, out RPM);
+                float.TryParse(hdxRecord.TPS, out TPS);
+                float.TryParse(hdxRecord.LAMBDA, out LAMBDA);
+                for (int i = 0; i < rpm.Length; i++)
+                {
+                    if (RPM <= float.Parse(rpm[i]))
+                    {
+                        for (int j = 0; j < tps.Length; j++)
+                        {
+                            if (TPS <= float.Parse(tps[j]))
+                            {
+                                UpdateLambdaValueArray(i, j, LAMBDA);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         private List<dynamic> ReadCSVFile(string filePath)
         {
             if (File.Exists(filePath))
@@ -166,7 +256,6 @@ namespace ProjectCS
                 ProcessRecord(record);
             }
         }
-
         private void ProcessRecord(dynamic record)
         {
             var recordDict = record as IDictionary<string, object>;
@@ -200,9 +289,9 @@ namespace ProjectCS
         {
             lambda_value.Add(lambda);
             //สูตรคำนวณ 
-            float lambda_value_average = lambda_value.Count;
-            string lambda_value_str = lambda_value_average.ToString("0.0");
-            NewVEs_Front[i, j] = lambda_value_str;
+            float New_VEs = float.Parse(dataSetVeFront[i, j]) * lambda;
+            string New_VEs_str = New_VEs.ToString("0.0");
+            NewVEs_Front[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
         }
     }
