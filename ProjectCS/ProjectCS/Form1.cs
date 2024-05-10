@@ -152,6 +152,10 @@ namespace ProjectCS
             {
                 for (int j = 0; j < 15; j++)
                 {
+                    if (NewVEs_Front[i, j] == "0.0" || string.IsNullOrEmpty(NewVEs_Front[i, j]))
+                    {
+                        NewVEs_Front[i, j] = dataSetVeFront[i, j];
+                    }
                     table1.Rows[i].Cells[j].Value = NewVEs_Front[i, j];
                 }
             }
@@ -187,7 +191,8 @@ namespace ProjectCS
                     {
                         tps = itemValue.ToString();
                     }
-                    else if (name == "d_lamda_desired")
+                    //else if (name == "d_lamda_desired")
+                    else if (name == "d_lamfeedback_f")
                     {
                         lambda = itemValue.ToString();
                     }
