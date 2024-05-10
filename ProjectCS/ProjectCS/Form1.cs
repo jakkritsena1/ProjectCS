@@ -67,13 +67,16 @@ namespace ProjectCS
         {"83.0", "83.0", "83.2", "83.2", "82.2", "85.2", "87.3", "88.4", "79.4", "70.4", "69.5", "69.5", "69.5", "69.5", "69.5"}
             };
         private int index = 0;
+        private string[,] PercentChange_Front = new string[21, 15];
+        private string[,] PercentChange_Rear = new string[21, 15];
         private string[,] NewVEs_Front = new string[21, 15];
-        List<float> lambda_value = new List<float>();
+        private string[,] NewVEs_Rear = new string[21, 15];
         public class HDXRecord
         {
             public string RPM { get; set; }
             public string TPS { get; set; }
-            public string LAMBDA { get; set; }
+            public string LAMBDA_F { get; set; }
+            public string LAMBDA_R { get; set; }
         }
         public Form1()
         {
@@ -106,7 +109,8 @@ namespace ProjectCS
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-
+            table1.CellFormatting += table_CellFormatting;
+            table2.CellFormatting += table_CellFormatting;
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -156,17 +160,23 @@ namespace ProjectCS
                     {
                         NewVEs_Front[i, j] = dataSetVeFront[i, j];
                     }
+                    if (NewVEs_Rear[i, j] == "0.0" || string.IsNullOrEmpty(NewVEs_Rear[i, j]))
+                    {
+                        NewVEs_Rear[i, j] = dataSetVeRear[i, j];
+                    }
                     table1.Rows[i].Cells[j].Value = NewVEs_Front[i, j];
+                    table2.Rows[i].Cells[j].Value = NewVEs_Rear[i, j];
                 }
             }
+            radioButton3.Enabled = true;
         }
         private List<HDXRecord> ReadHDXFile(string filePath)
         {
             List<HDXRecord> hdxRecords = new List<HDXRecord>();
-            string rpm = ""; 
-            string tps = ""; 
-            string lambda = ""; 
-
+            string rpm = "";
+            string tps = "";
+            string lambda_f = "";
+            string lambda_r = "";
             XmlDocument xmlDoc = new XmlDocument();
             if (!File.Exists(filePath))
             {
@@ -194,16 +204,21 @@ namespace ProjectCS
                     //else if (name == "d_lamda_desired")
                     else if (name == "d_lamfeedback_f")
                     {
-                        lambda = itemValue.ToString();
+                        lambda_f = itemValue.ToString();
                     }
-                        HDXRecord hdxRecord = new HDXRecord
-                        {
-                            RPM = rpm,
-                            TPS = tps,
-                            LAMBDA = lambda,
-                        };
-                        hdxRecords.Add(hdxRecord);
+                    else if (name == "d_lamfeedback_r")
+                    {
+                        lambda_r = itemValue.ToString();
                     }
+                    HDXRecord hdxRecord = new HDXRecord
+                    {
+                        RPM = rpm,
+                        TPS = tps,
+                        LAMBDA_F = lambda_f,
+                        LAMBDA_R = lambda_r,
+                    };
+                    hdxRecords.Add(hdxRecord);
+                }
             }
             catch (Exception ex)
             {
@@ -217,10 +232,11 @@ namespace ProjectCS
         {
             foreach (var hdxRecord in hdxRecords)
             {
-                float RPM, TPS, LAMBDA;
+                float RPM, TPS, LAMBDA_F, LAMBDA_R;
                 float.TryParse(hdxRecord.RPM, out RPM);
                 float.TryParse(hdxRecord.TPS, out TPS);
-                float.TryParse(hdxRecord.LAMBDA, out LAMBDA);
+                float.TryParse(hdxRecord.LAMBDA_F, out LAMBDA_F);
+                float.TryParse(hdxRecord.LAMBDA_R, out LAMBDA_R);
                 for (int i = 0; i < rpm.Length; i++)
                 {
                     if (RPM <= float.Parse(rpm[i]))
@@ -229,7 +245,9 @@ namespace ProjectCS
                         {
                             if (TPS <= float.Parse(tps[j]))
                             {
-                                UpdateLambdaValueArray(i, j, LAMBDA);
+                                CalculateVEs_Front(i, j, LAMBDA_F);
+                                CalculateVEs_Rear(i, j, LAMBDA_R);
+                                PercentChangeCalculate_Front(i, j);
                             }
                         }
                     }
@@ -283,21 +301,88 @@ namespace ProjectCS
                     {
                         if (TPS <= float.Parse(tps[j]))
                         {
-                            UpdateLambdaValueArray(i, j, lambda);
+                            CalculateVEs_Front(i, j, lambda);
+                            PercentChangeCalculate_Front(i, j);
                         }
                     }
                 }
             }
         }
 
-        private void UpdateLambdaValueArray(int i, int j, float lambda)
+        private void CalculateVEs_Front(int i, int j, float lambda)
         {
-            lambda_value.Add(lambda);
             //สูตรคำนวณ 
             float New_VEs = float.Parse(dataSetVeFront[i, j]) * lambda;
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Front[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
+        }
+        private void CalculateVEs_Rear(int i, int j, float lambda)
+        {
+            //สูตรคำนวณ 
+            float New_VEs = float.Parse(dataSetVeRear[i, j]) * lambda;
+            string New_VEs_str = New_VEs.ToString("0.0");
+            NewVEs_Rear[i, j] = New_VEs_str;
+            radioButton2.Enabled = true;
+        }
+        private Color GetCellColor(float veValue)
+        {
+            float percent = veValue / 100f;
+            int red = (int)(255 * percent);
+            int green = (int)(255 * (1 - percent));
+            red = Math.Min(255, red + 120);
+            green = Math.Min(255, green + 70);
+            return Color.FromArgb(red, green, 0);
+        }
+
+        private void table_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            DataGridView dgv = sender as DataGridView;
+            string cellValue = dgv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+            if (!string.IsNullOrEmpty(cellValue) && float.TryParse(cellValue, out float veValue))
+            {
+                Color cellColor = GetCellColor(veValue);
+                e.CellStyle.BackColor = cellColor;
+            }
+            else
+            {
+                e.CellStyle.BackColor = Color.White;
+
+            }
+        }
+
+        private void PercentChangeCalculate_Front(int i, int j)
+        {
+            float newValue = float.Parse(NewVEs_Front[i, j]);
+            float oldValue = float.Parse(dataSetVeFront[i, j]);
+            float PercentChange_value = Math.Abs(((newValue - oldValue) / oldValue)*100);
+            PercentChange_Front[i,j] = PercentChange_value.ToString("0.00");
+        }
+        private void PercentChangeCalculate_Rear(int i, int j)
+        {
+            float newValue = float.Parse(NewVEs_Rear[i, j]);
+            float oldValue = float.Parse(dataSetVeRear[i, j]);
+            float PercentChange_value = Math.Abs(((newValue - oldValue) / oldValue) * 100);
+            PercentChange_Rear[i,j] = PercentChange_value.ToString("0.00");
+        }
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 21; i++)
+            {
+                for (int j = 0; j < 15; j++)
+                {
+                    if (string.IsNullOrEmpty(PercentChange_Front[i, j]) || float.Parse(PercentChange_Front[i, j]) == 100.0)
+                    {
+                        PercentChange_Front[i, j] = "0.0";
+                    }
+                    if (string.IsNullOrEmpty(PercentChange_Rear[i, j]) || float.Parse(PercentChange_Rear[i, j]) == 100.0)
+                    {
+                        PercentChange_Rear[i, j] = "0.0";
+                    }
+                    table1.Rows[i].Cells[j].Value = PercentChange_Front[i, j];
+                    table2.Rows[i].Cells[j].Value = PercentChange_Rear[i, j];
+                }
+            }
         }
     }
 }
