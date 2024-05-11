@@ -248,6 +248,7 @@ namespace ProjectCS
                                 CalculateVEs_Front(i, j, LAMBDA_F);
                                 CalculateVEs_Rear(i, j, LAMBDA_R);
                                 PercentChangeCalculate_Front(i, j);
+                                PercentChangeCalculate_Rear(i, j);
                             }
                         }
                     }
@@ -303,6 +304,7 @@ namespace ProjectCS
                         {
                             CalculateVEs_Front(i, j, lambda);
                             PercentChangeCalculate_Front(i, j);
+                            PercentChangeCalculate_Rear(i, j);
                         }
                     }
                 }
@@ -355,15 +357,15 @@ namespace ProjectCS
         {
             float newValue = float.Parse(NewVEs_Front[i, j]);
             float oldValue = float.Parse(dataSetVeFront[i, j]);
-            float PercentChange_value = Math.Abs(((newValue - oldValue) / oldValue)*100);
-            PercentChange_Front[i,j] = PercentChange_value.ToString("0.00");
+            float PercentChange_value = Math.Abs(((newValue - oldValue) / oldValue) * 100);
+            PercentChange_Front[i, j] = PercentChange_value.ToString("0.00");
         }
         private void PercentChangeCalculate_Rear(int i, int j)
         {
             float newValue = float.Parse(NewVEs_Rear[i, j]);
             float oldValue = float.Parse(dataSetVeRear[i, j]);
             float PercentChange_value = Math.Abs(((newValue - oldValue) / oldValue) * 100);
-            PercentChange_Rear[i,j] = PercentChange_value.ToString("0.00");
+            PercentChange_Rear[i, j] = PercentChange_value.ToString("0.00");
         }
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
