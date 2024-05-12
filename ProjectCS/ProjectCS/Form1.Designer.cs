@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             mapToolStripMenuItem = new ToolStripMenuItem();
@@ -42,6 +43,10 @@
             table1 = new DataGridView();
             table2 = new DataGridView();
             button1 = new Button();
+            saveFileDialog1 = new SaveFileDialog();
+            button2 = new Button();
+            progressBar1 = new ProgressBar();
+            timer1 = new System.Windows.Forms.Timer(components);
             menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)table1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)table2).BeginInit();
@@ -164,7 +169,7 @@
             table1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             table1.SelectionMode = DataGridViewSelectionMode.CellSelect;
             table1.Size = new Size(700, 550);
-            table1.TabIndex = 6;
+            table1.TabIndex = 10;
             // 
             // table2
             // 
@@ -184,7 +189,7 @@
             // 
             // button1
             // 
-            button1.Location = new Point(42, 701);
+            button1.Location = new Point(335, 701);
             button1.Name = "button1";
             button1.Size = new Size(102, 29);
             button1.TabIndex = 11;
@@ -192,11 +197,34 @@
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
+            // button2
+            // 
+            button2.Location = new Point(452, 701);
+            button2.Name = "button2";
+            button2.Size = new Size(123, 29);
+            button2.TabIndex = 13;
+            button2.Text = "Update Starting VEs";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Location = new Point(42, 701);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(273, 29);
+            progressBar1.TabIndex = 14;
+            // 
+            // timer1
+            // 
+            timer1.Tick += timer1_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 761);
+            Controls.Add(progressBar1);
+            Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(table2);
             Controls.Add(label2);
@@ -236,5 +264,9 @@
         private DataGridView table1;
         private DataGridView table2;
         private Button button1;
+        private SaveFileDialog saveFileDialog1;
+        private Button button2;
+        private ProgressBar progressBar1;
+        private System.Windows.Forms.Timer timer1;
     }
 }

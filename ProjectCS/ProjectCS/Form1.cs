@@ -117,18 +117,20 @@ namespace ProjectCS
             using (OpenFileDialog openfile = new OpenFileDialog())
             {
                 openfile.InitialDirectory = "c:/";
-                openfile.Filter = "CSV Files (*.csv)|*.csv|HDX Files (*.hdx)|*.hdx";
+                /*openfile.Filter = "CSV Files (*.csv)|*.csv|HDX Files (*.hdx)|*.hdx";*/
+                openfile.Filter = "HDX Files (*.hdx)|*.hdx";
                 if (openfile.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openfile.FileName;
-                    if (filePath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        List<dynamic> records = ReadCSVFile(filePath);
-                        ProcessCsvRecords(records);
-                    }
-                    else if (filePath.EndsWith(".hdx", StringComparison.OrdinalIgnoreCase))
+                    /* if (filePath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                     {
+                         List<dynamic> records = ReadCSVFile(filePath);
+                         ProcessCsvRecords(records);
+                     }*/
+                    if (filePath.EndsWith(".hdx", StringComparison.OrdinalIgnoreCase))
                     {
                         List<HDXRecord> hdxRecords = ReadHDXFile(filePath);
+                        this.timer1.Start();
                         ProcessRecordHDX(hdxRecords);
                     }
                 }
@@ -144,6 +146,8 @@ namespace ProjectCS
                     table2.Rows[i].Cells[j].Value = dataSetVeRear[i, j];
                 }
             }
+            table1.ReadOnly = false;
+            table2.ReadOnly = false;
             radioButton2.Enabled = false;
             radioButton3.Enabled = false;
             radioButton4.Enabled = false;
@@ -227,7 +231,32 @@ namespace ProjectCS
 
             return hdxRecords;
         }
-
+        private float topBoundaryTPS(int j)
+        {
+            if ((j - 1) < 0)
+            {
+                tps[j] = "0";
+                return float.Parse(tps[j]);
+            }
+            else
+            {
+                tps[j] = tps[j - 1];
+                return float.Parse(tps[j]);
+            }
+        }
+        private float topBoundaryRPM(int i)
+        {
+            if ((i - 1) < 0)
+            {
+                rpm[i] = "0";
+                return float.Parse(rpm[i]);
+            }
+            else
+            {
+                rpm[i] = rpm[i - 1];
+                return float.Parse(rpm[i]);
+            }
+        }
         private void ProcessRecordHDX(List<HDXRecord> hdxRecords)
         {
             foreach (var hdxRecord in hdxRecords)
@@ -239,12 +268,12 @@ namespace ProjectCS
                 float.TryParse(hdxRecord.LAMBDA_R, out LAMBDA_R);
                 for (int i = 0; i < rpm.Length; i++)
                 {
-                    if (RPM <= float.Parse(rpm[i]))
+                    if (RPM <= float.Parse(rpm[i]) && RPM > 0 && RPM > topBoundaryRPM(i))
                     {
-                        for (int j = 0; j < tps.Length; j++)
+                        for (int j = 0; j < tps.Length; j++) 
                         {
-                            if (TPS <= float.Parse(tps[j]))
-                            {
+                            if (TPS <= float.Parse(tps[j]) && TPS > 0 && TPS > topBoundaryTPS(j))
+                            {                          
                                 CalculateVEs_Front(i, j, LAMBDA_F);
                                 CalculateVEs_Rear(i, j, LAMBDA_R);
                                 PercentChangeCalculate_Front(i, j);
@@ -255,7 +284,7 @@ namespace ProjectCS
                 }
             }
         }
-        private List<dynamic> ReadCSVFile(string filePath)
+        /*private List<dynamic> ReadCSVFile(string filePath)
         {
             if (File.Exists(filePath))
             {
@@ -270,8 +299,8 @@ namespace ProjectCS
                 MessageBox.Show("File not found: " + filePath);
                 return null;
             }
-        }
-        private void ProcessCsvRecords(List<dynamic> records)
+        }*/
+        /*private void ProcessCsvRecords(List<dynamic> records)
         {
             if (records == null) return;
 
@@ -286,14 +315,16 @@ namespace ProjectCS
             if (recordDict == null ||
                 !recordDict.ContainsKey("d_eng_speed") ||
                 !recordDict.ContainsKey("d_tps_pct") ||
-                !recordDict.ContainsKey("d_lamda_desired"))
+                !recordDict.ContainsKey("d_lamfeedback_f") ||
+                !recordDict.ContainsKey("d_lamfeedback_r"))
             {
                 return;
             }
-            float engSpeed, TPS, lambda;
+            float engSpeed, TPS, lambda_f, lambda_r;
             float.TryParse(recordDict["d_eng_speed"].ToString(), out engSpeed);
             float.TryParse(recordDict["d_tps_pct"].ToString(), out TPS);
-            float.TryParse(recordDict["d_lamda_desired"].ToString(), out lambda);
+            float.TryParse(recordDict["d_lamfeedback_f"].ToString(), out lambda_f);
+            float.TryParse(recordDict["d_lamfeedback_r"].ToString(), out lambda_r);
             for (int i = 0; i < rpm.Length; i++)
             {
                 if (engSpeed <= float.Parse(rpm[i]))
@@ -302,15 +333,15 @@ namespace ProjectCS
                     {
                         if (TPS <= float.Parse(tps[j]))
                         {
-                            CalculateVEs_Front(i, j, lambda);
+                            CalculateVEs_Front(i, j, lambda_f);
+                            CalculateVEs_Rear(i, j, lambda_r);
                             PercentChangeCalculate_Front(i, j);
                             PercentChangeCalculate_Rear(i, j);
                         }
                     }
                 }
             }
-        }
-
+        }*/
         private void CalculateVEs_Front(int i, int j, float lambda)
         {
             //สูตรคำนวณ 
@@ -352,7 +383,6 @@ namespace ProjectCS
 
             }
         }
-
         private void PercentChangeCalculate_Front(int i, int j)
         {
             float newValue = float.Parse(NewVEs_Front[i, j]);
@@ -385,6 +415,31 @@ namespace ProjectCS
                     table2.Rows[i].Cells[j].Value = PercentChange_Rear[i, j];
                 }
             }
+        }
+        private void UpdateCellValueAndArray(DataGridView dataGridView, string[,] array)
+        {
+            for (int i = 0; i < dataGridView.Rows.Count; i++)
+            {
+                for (int j = 0; j < dataGridView.Columns.Count; j++)
+                {
+                    string cellValue = dataGridView.Rows[i].Cells[j].Value?.ToString();
+                    if (!string.IsNullOrEmpty(cellValue))
+                    {
+                        dataGridView.Rows[i].Cells[j].Value = cellValue;
+                        array[i, j] = cellValue;
+                    }
+                }
+            }
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            UpdateCellValueAndArray(table1, dataSetVeFront);
+            UpdateCellValueAndArray(table2, dataSetVeRear);
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            this.progressBar1.Increment(30);
         }
     }
 }
