@@ -37,7 +37,6 @@
             radioButton2 = new RadioButton();
             radioButton3 = new RadioButton();
             radioButton4 = new RadioButton();
-            radioButton5 = new RadioButton();
             label1 = new Label();
             label2 = new Label();
             table1 = new DataGridView();
@@ -120,22 +119,12 @@
             radioButton4.AutoSize = true;
             radioButton4.Location = new Point(308, 56);
             radioButton4.Name = "radioButton4";
-            radioButton4.Size = new Size(86, 19);
+            radioButton4.Size = new Size(80, 19);
             radioButton4.TabIndex = 4;
             radioButton4.TabStop = true;
-            radioButton4.Text = "Corrections";
+            radioButton4.Text = "Air To Fuel";
             radioButton4.UseVisualStyleBackColor = true;
-            // 
-            // radioButton5
-            // 
-            radioButton5.AutoSize = true;
-            radioButton5.Location = new Point(401, 56);
-            radioButton5.Name = "radioButton5";
-            radioButton5.Size = new Size(82, 19);
-            radioButton5.TabIndex = 5;
-            radioButton5.TabStop = true;
-            radioButton5.Text = "Hit Counts";
-            radioButton5.UseVisualStyleBackColor = true;
+            radioButton4.CheckedChanged += radioButton4_CheckedChanged;
             // 
             // label1
             // 
@@ -230,7 +219,6 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(table1);
-            Controls.Add(radioButton5);
             Controls.Add(radioButton4);
             Controls.Add(radioButton3);
             Controls.Add(radioButton2);
@@ -258,7 +246,6 @@
         private RadioButton radioButton2;
         private RadioButton radioButton3;
         private RadioButton radioButton4;
-        private RadioButton radioButton5;
         private Label label1;
         private Label label2;
         private DataGridView table1;

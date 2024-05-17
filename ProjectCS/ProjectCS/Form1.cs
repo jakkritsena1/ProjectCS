@@ -69,6 +69,8 @@ namespace ProjectCS
         private int index = 0;
         private string[,] PercentChange_Front = new string[21, 15];
         private string[,] PercentChange_Rear = new string[21, 15];
+        private string[,] ATF_Front = new string[21, 15];
+        private string[,] ATF_Rear = new string[21, 15];
         private string[,] NewVEs_Front = new string[21, 15];
         private string[,] NewVEs_Rear = new string[21, 15];
         public class HDXRecord
@@ -151,7 +153,6 @@ namespace ProjectCS
             radioButton2.Enabled = false;
             radioButton3.Enabled = false;
             radioButton4.Enabled = false;
-            radioButton5.Enabled = false;
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
@@ -268,16 +269,21 @@ namespace ProjectCS
                 float.TryParse(hdxRecord.LAMBDA_R, out LAMBDA_R);
                 for (int i = 0; i < rpm.Length; i++)
                 {
-                    if (RPM <= float.Parse(rpm[i]) && RPM > 0 && RPM > topBoundaryRPM(i))
+                    if (RPM >= float.Parse(rpm[i - 1 == -1 ? 0: i-1]))
                     {
-                        for (int j = 0; j < tps.Length; j++) 
+                        if (RPM <= float.Parse(rpm[i]) && RPM > 0)
                         {
-                            if (TPS <= float.Parse(tps[j]) && TPS > 0 && TPS > topBoundaryTPS(j))
-                            {                          
-                                CalculateVEs_Front(i, j, LAMBDA_F);
-                                CalculateVEs_Rear(i, j, LAMBDA_R);
-                                PercentChangeCalculate_Front(i, j);
-                                PercentChangeCalculate_Rear(i, j);
+                            for (int j = 0; j < tps.Length; j++)
+                            {
+                                if (TPS <= float.Parse(tps[j]) && TPS > 0)
+                                {
+                                    CalculateVEs_Front(i, j, LAMBDA_F);
+                                    CalculateVEs_Rear(i, j, LAMBDA_R);
+                                    PercentChangeCalculate_Front(i, j);
+                                    PercentChangeCalculate_Rear(i, j);
+                                    ATF_Calculate_Front(i, j, LAMBDA_F);
+                                    ATF_Calculate_Rear(i, j, LAMBDA_R);
+                                }
                             }
                         }
                     }
@@ -345,7 +351,7 @@ namespace ProjectCS
         private void CalculateVEs_Front(int i, int j, float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = float.Parse(dataSetVeFront[i, j]) * lambda;
+            float New_VEs = float.Parse(dataSetVeFront[i, j]) / lambda;
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Front[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
@@ -353,7 +359,7 @@ namespace ProjectCS
         private void CalculateVEs_Rear(int i, int j, float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = float.Parse(dataSetVeRear[i, j]) * lambda;
+            float New_VEs = float.Parse(dataSetVeRear[i, j]) / lambda;
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Rear[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
@@ -413,6 +419,7 @@ namespace ProjectCS
                     }
                     table1.Rows[i].Cells[j].Value = PercentChange_Front[i, j];
                     table2.Rows[i].Cells[j].Value = PercentChange_Rear[i, j];
+                    radioButton4.Enabled = true;
                 }
             }
         }
@@ -440,6 +447,37 @@ namespace ProjectCS
         private void timer1_Tick(object sender, EventArgs e)
         {
             this.progressBar1.Increment(30);
+        }
+        private void ATF_Calculate_Front(int i, int j, float lambda)
+        {
+            float ATF_value = (float)14.7 / lambda;
+            string ATF_value_str = ATF_value.ToString("0.0");
+            ATF_Front[i, j] = ATF_value_str;
+        }
+        private void ATF_Calculate_Rear(int i, int j, float lambda)
+        {
+            float ATF_value = (float)14.7 / lambda;
+            string ATF_value_str = ATF_value.ToString("0.0");
+            ATF_Rear[i, j] = ATF_value_str;
+        }
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 21; i++)
+            {
+                for (int j = 0; j < 15; j++)
+                {
+                    if (string.IsNullOrEmpty(ATF_Front[i, j]))
+                    {
+                        ATF_Front[i, j] = "0.0";
+                    }
+                    if (string.IsNullOrEmpty(ATF_Rear[i, j]))
+                    {
+                        ATF_Rear[i, j] = "0.0";
+                    }
+                    table1.Rows[i].Cells[j].Value = ATF_Front[i, j];
+                    table2.Rows[i].Cells[j].Value = ATF_Rear[i, j];
+                }
+            }
         }
     }
 }
