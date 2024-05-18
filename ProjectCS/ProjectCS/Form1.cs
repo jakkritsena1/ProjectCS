@@ -77,6 +77,9 @@ namespace ProjectCS
         {
             public string RPM { get; set; }
             public string TPS { get; set; }
+            public string ADV_F {  get; set; }
+            public string O2_F { get; set; }
+            public string VE_F { get; set; }
             public string LAMBDA_F { get; set; }
             public string LAMBDA_R { get; set; }
         }
@@ -180,6 +183,9 @@ namespace ProjectCS
             List<HDXRecord> hdxRecords = new List<HDXRecord>();
             string rpm = "";
             string tps = "";
+            string front_adv = "";
+            string front_o2 = "";
+            string front_ve = "";
             string lambda_f = "";
             string lambda_r = "";
             XmlDocument xmlDoc = new XmlDocument();
@@ -206,7 +212,18 @@ namespace ProjectCS
                     {
                         tps = itemValue.ToString();
                     }
-                    //else if (name == "d_lamda_desired")
+                    else if (name == "d_adv_front")
+                    {
+                        front_adv = itemValue.ToString();
+                    }
+                    else if (name == "d_front_o2")
+                    {
+                        front_o2 = itemValue.ToString();
+                    }
+                    else if (name == "d_ve_front")
+                    {
+                        front_ve = itemValue.ToString();
+                    }
                     else if (name == "d_lamfeedback_f")
                     {
                         lambda_f = itemValue.ToString();
@@ -219,6 +236,9 @@ namespace ProjectCS
                     {
                         RPM = rpm,
                         TPS = tps,
+                        ADV_F = front_adv,
+                        O2_F = front_o2,
+                        VE_F = front_ve,
                         LAMBDA_F = lambda_f,
                         LAMBDA_R = lambda_r,
                     };
@@ -262,11 +282,14 @@ namespace ProjectCS
         {
             foreach (var hdxRecord in hdxRecords)
             {
-                float RPM, TPS, LAMBDA_F, LAMBDA_R;
+                float RPM, TPS, ADV_F, O2_F, VE_F, LAMBDA_F, LAMBDA_R;
                 float.TryParse(hdxRecord.RPM, out RPM);
                 float.TryParse(hdxRecord.TPS, out TPS);
                 float.TryParse(hdxRecord.LAMBDA_F, out LAMBDA_F);
                 float.TryParse(hdxRecord.LAMBDA_R, out LAMBDA_R);
+                float.TryParse(hdxRecord.ADV_F, out ADV_F);
+                float.TryParse(hdxRecord.O2_F, out O2_F);
+                float.TryParse(hdxRecord.VE_F, out VE_F);
                 for (int i = 0; i < rpm.Length; i++)
                 {
                     if (RPM >= float.Parse(rpm[i - 1 == -1 ? 0: i-1]))
@@ -277,7 +300,7 @@ namespace ProjectCS
                             {
                                 if (TPS <= float.Parse(tps[j]) && TPS > 0)
                                 {
-                                    CalculateVEs_Front(i, j, LAMBDA_F);
+                                    CalculateVEs_Front(i, j, ADV_F, O2_F, VE_F, LAMBDA_F);
                                     CalculateVEs_Rear(i, j, LAMBDA_R);
                                     PercentChangeCalculate_Front(i, j);
                                     PercentChangeCalculate_Rear(i, j);
@@ -348,10 +371,10 @@ namespace ProjectCS
                 }
             }
         }*/
-        private void CalculateVEs_Front(int i, int j, float lambda)
+        private void CalculateVEs_Front(int i, int j, float front_adv, float front_o2, float front_ve,  float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = float.Parse(dataSetVeFront[i, j]) / lambda;
+            float New_VEs = ((float)-9.486 + ((float)0.48*(front_adv)) + ((float)1.93*(front_o2)) + ((float)1.049 * (front_ve)) + ((float)1.805 * (lambda)));
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Front[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
@@ -369,7 +392,7 @@ namespace ProjectCS
             float percent = veValue / 100f;
             int red = (int)(255 * percent);
             int green = (int)(255 * (1 - percent));
-            red = Math.Min(255, red + 120);
+            red = Math.Min(255, red + 25);
             green = Math.Min(255, green + 70);
             return Color.FromArgb(red, green, 0);
         }
@@ -380,7 +403,7 @@ namespace ProjectCS
             string cellValue = dgv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
             if (!string.IsNullOrEmpty(cellValue) && float.TryParse(cellValue, out float veValue))
             {
-                Color cellColor = GetCellColor(veValue);
+                Color cellColor = GetCellColor(Math.Min(veValue,100));
                 e.CellStyle.BackColor = cellColor;
             }
             else
