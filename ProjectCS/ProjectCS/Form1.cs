@@ -69,8 +69,6 @@ namespace ProjectCS
         private int index = 0;
         private string[,] PercentChange_Front = new string[21, 15];
         private string[,] PercentChange_Rear = new string[21, 15];
-        private string[,] ATF_Front = new string[21, 15];
-        private string[,] ATF_Rear = new string[21, 15];
         private string[,] NewVEs_Front = new string[21, 15];
         private string[,] NewVEs_Rear = new string[21, 15];
         public class HDXRecord
@@ -81,6 +79,9 @@ namespace ProjectCS
             public string O2_F { get; set; }
             public string VE_F { get; set; }
             public string LAMBDA_F { get; set; }
+            public string ADV_R { get; set; }
+            public string O2_R {  get; set; }
+            public string VE_R { get; set; }
             public string LAMBDA_R { get; set; }
         }
         public Form1()
@@ -155,7 +156,6 @@ namespace ProjectCS
             table2.ReadOnly = false;
             radioButton2.Enabled = false;
             radioButton3.Enabled = false;
-            radioButton4.Enabled = false;
         }
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
@@ -187,6 +187,9 @@ namespace ProjectCS
             string front_o2 = "";
             string front_ve = "";
             string lambda_f = "";
+            string rear_adv = "";
+            string rear_o2 = "";
+            string rear_ve = "";
             string lambda_r = "";
             XmlDocument xmlDoc = new XmlDocument();
             if (!File.Exists(filePath))
@@ -228,6 +231,18 @@ namespace ProjectCS
                     {
                         lambda_f = itemValue.ToString();
                     }
+                    else if (name == "d_adv_rear")
+                    {
+                        rear_adv = itemValue.ToString();
+                    }
+                    else if (name == "d_rear_o2")
+                    {
+                        rear_o2 = itemValue.ToString();
+                    }
+                    else if (name == "d_ve_rear")
+                    {
+                        rear_ve = itemValue.ToString();
+                    }
                     else if (name == "d_lamfeedback_r")
                     {
                         lambda_r = itemValue.ToString();
@@ -240,6 +255,9 @@ namespace ProjectCS
                         O2_F = front_o2,
                         VE_F = front_ve,
                         LAMBDA_F = lambda_f,
+                        ADV_R = lambda_r,
+                        O2_R = lambda_r,
+                        VE_R = lambda_r,
                         LAMBDA_R = lambda_r,
                     };
                     hdxRecords.Add(hdxRecord);
@@ -252,37 +270,11 @@ namespace ProjectCS
 
             return hdxRecords;
         }
-        private float topBoundaryTPS(int j)
-        {
-            if ((j - 1) < 0)
-            {
-                tps[j] = "0";
-                return float.Parse(tps[j]);
-            }
-            else
-            {
-                tps[j] = tps[j - 1];
-                return float.Parse(tps[j]);
-            }
-        }
-        private float topBoundaryRPM(int i)
-        {
-            if ((i - 1) < 0)
-            {
-                rpm[i] = "0";
-                return float.Parse(rpm[i]);
-            }
-            else
-            {
-                rpm[i] = rpm[i - 1];
-                return float.Parse(rpm[i]);
-            }
-        }
         private void ProcessRecordHDX(List<HDXRecord> hdxRecords)
         {
             foreach (var hdxRecord in hdxRecords)
             {
-                float RPM, TPS, ADV_F, O2_F, VE_F, LAMBDA_F, LAMBDA_R;
+                float RPM, TPS, ADV_F, O2_F, VE_F, LAMBDA_F, ADV_R, O2_R, VE_R, LAMBDA_R;
                 float.TryParse(hdxRecord.RPM, out RPM);
                 float.TryParse(hdxRecord.TPS, out TPS);
                 float.TryParse(hdxRecord.LAMBDA_F, out LAMBDA_F);
@@ -290,6 +282,9 @@ namespace ProjectCS
                 float.TryParse(hdxRecord.ADV_F, out ADV_F);
                 float.TryParse(hdxRecord.O2_F, out O2_F);
                 float.TryParse(hdxRecord.VE_F, out VE_F);
+                float.TryParse(hdxRecord.ADV_R, out ADV_R);
+                float.TryParse(hdxRecord.O2_R, out O2_R);
+                float.TryParse(hdxRecord.VE_R, out ADV_R);
                 for (int i = 0; i < rpm.Length; i++)
                 {
                     if (RPM >= float.Parse(rpm[i - 1 == -1 ? 0: i-1]))
@@ -300,12 +295,10 @@ namespace ProjectCS
                             {
                                 if (TPS <= float.Parse(tps[j]) && TPS > 0)
                                 {
-                                    CalculateVEs_Front(i, j, ADV_F, O2_F, VE_F, LAMBDA_F);
-                                    CalculateVEs_Rear(i, j, LAMBDA_R);
+                                    CalculateVEs_Front(i, j, ADV_F, O2_F, /*VE_F,*/ LAMBDA_F);
+                                    CalculateVEs_Rear(i, j, ADV_R, O2_R, /*VE_R,*/ LAMBDA_R);
                                     PercentChangeCalculate_Front(i, j);
                                     PercentChangeCalculate_Rear(i, j);
-                                    ATF_Calculate_Front(i, j, LAMBDA_F);
-                                    ATF_Calculate_Rear(i, j, LAMBDA_R);
                                 }
                             }
                         }
@@ -371,18 +364,18 @@ namespace ProjectCS
                 }
             }
         }*/
-        private void CalculateVEs_Front(int i, int j, float front_adv, float front_o2, float front_ve,  float lambda)
+        private void CalculateVEs_Front(int i, int j, float front_adv, float front_o2, /*float front_ve,*/  float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = ((float)-9.486 + ((float)0.48*(front_adv)) + ((float)1.93*(front_o2)) + ((float)1.049 * (front_ve)) + ((float)1.805 * (lambda)));
+            float New_VEs = ((float)-9.486 + ((float)0.48*(front_adv)) + ((float)1.93*(front_o2)) + ((float)1.049 * (float.Parse(dataSetVeFront[i,j]))) + ((float)1.805 * (lambda)));
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Front[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
         }
-        private void CalculateVEs_Rear(int i, int j, float lambda)
+        private void CalculateVEs_Rear(int i, int j, float rear_adv, float rear_o2, /*float front_ve,*/  float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = float.Parse(dataSetVeRear[i, j]) / lambda;
+            float New_VEs = ((float)-9.486 + ((float)0.48 * (rear_adv)) + ((float)1.93 * (rear_o2)) + ((float)1.049 * (float.Parse(dataSetVeRear[i, j]))) + ((float)1.805 * (lambda)));
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Rear[i, j] = New_VEs_str;
             radioButton2.Enabled = true;
@@ -442,7 +435,6 @@ namespace ProjectCS
                     }
                     table1.Rows[i].Cells[j].Value = PercentChange_Front[i, j];
                     table2.Rows[i].Cells[j].Value = PercentChange_Rear[i, j];
-                    radioButton4.Enabled = true;
                 }
             }
         }
@@ -470,37 +462,6 @@ namespace ProjectCS
         private void timer1_Tick(object sender, EventArgs e)
         {
             this.progressBar1.Increment(30);
-        }
-        private void ATF_Calculate_Front(int i, int j, float lambda)
-        {
-            float ATF_value = (float)14.7 / lambda;
-            string ATF_value_str = ATF_value.ToString("0.0");
-            ATF_Front[i, j] = ATF_value_str;
-        }
-        private void ATF_Calculate_Rear(int i, int j, float lambda)
-        {
-            float ATF_value = (float)14.7 / lambda;
-            string ATF_value_str = ATF_value.ToString("0.0");
-            ATF_Rear[i, j] = ATF_value_str;
-        }
-        private void radioButton4_CheckedChanged(object sender, EventArgs e)
-        {
-            for (int i = 0; i < 21; i++)
-            {
-                for (int j = 0; j < 15; j++)
-                {
-                    if (string.IsNullOrEmpty(ATF_Front[i, j]))
-                    {
-                        ATF_Front[i, j] = "0.0";
-                    }
-                    if (string.IsNullOrEmpty(ATF_Rear[i, j]))
-                    {
-                        ATF_Rear[i, j] = "0.0";
-                    }
-                    table1.Rows[i].Cells[j].Value = ATF_Front[i, j];
-                    table2.Rows[i].Cells[j].Value = ATF_Rear[i, j];
-                }
-            }
         }
     }
 }

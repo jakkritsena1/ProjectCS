@@ -36,7 +36,6 @@
             radioButton1 = new RadioButton();
             radioButton2 = new RadioButton();
             radioButton3 = new RadioButton();
-            radioButton4 = new RadioButton();
             label1 = new Label();
             label2 = new Label();
             table1 = new DataGridView();
@@ -113,18 +112,6 @@
             radioButton3.Text = "%Change";
             radioButton3.UseVisualStyleBackColor = true;
             radioButton3.CheckedChanged += radioButton3_CheckedChanged;
-            // 
-            // radioButton4
-            // 
-            radioButton4.AutoSize = true;
-            radioButton4.Location = new Point(308, 56);
-            radioButton4.Name = "radioButton4";
-            radioButton4.Size = new Size(80, 19);
-            radioButton4.TabIndex = 4;
-            radioButton4.TabStop = true;
-            radioButton4.Text = "Air To Fuel";
-            radioButton4.UseVisualStyleBackColor = true;
-            radioButton4.CheckedChanged += radioButton4_CheckedChanged;
             // 
             // label1
             // 
@@ -219,7 +206,6 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(table1);
-            Controls.Add(radioButton4);
             Controls.Add(radioButton3);
             Controls.Add(radioButton2);
             Controls.Add(radioButton1);
@@ -245,7 +231,6 @@
         private RadioButton radioButton1;
         private RadioButton radioButton2;
         private RadioButton radioButton3;
-        private RadioButton radioButton4;
         private Label label1;
         private Label label2;
         private DataGridView table1;
