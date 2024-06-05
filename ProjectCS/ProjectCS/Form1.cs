@@ -75,12 +75,12 @@ namespace ProjectCS
         {
             public string RPM { get; set; }
             public string TPS { get; set; }
-            public string ADV_F {  get; set; }
+            public string ADV_F { get; set; }
             public string O2_F { get; set; }
             public string VE_F { get; set; }
             public string LAMBDA_F { get; set; }
             public string ADV_R { get; set; }
-            public string O2_R {  get; set; }
+            public string O2_R { get; set; }
             public string VE_R { get; set; }
             public string LAMBDA_R { get; set; }
         }
@@ -135,9 +135,11 @@ namespace ProjectCS
                      }*/
                     if (filePath.EndsWith(".hdx", StringComparison.OrdinalIgnoreCase))
                     {
+                        radioButton2.Enabled = false;
                         List<HDXRecord> hdxRecords = ReadHDXFile(filePath);
                         this.timer1.Start();
                         ProcessRecordHDX(hdxRecords);
+                        radioButton2.Enabled = true;
                     }
                 }
             }
@@ -274,8 +276,16 @@ namespace ProjectCS
         {
             foreach (var hdxRecord in hdxRecords)
             {
+                if (string.IsNullOrEmpty(hdxRecord.RPM) || string.IsNullOrEmpty(hdxRecord.TPS) ||
+                    string.IsNullOrEmpty(hdxRecord.LAMBDA_F) || string.IsNullOrEmpty(hdxRecord.LAMBDA_R) ||
+                    string.IsNullOrEmpty(hdxRecord.ADV_F) || string.IsNullOrEmpty(hdxRecord.O2_F) ||
+                    string.IsNullOrEmpty(hdxRecord.VE_F) || string.IsNullOrEmpty(hdxRecord.ADV_R) ||
+                    string.IsNullOrEmpty(hdxRecord.O2_R) || string.IsNullOrEmpty(hdxRecord.VE_R))
+                {
+                    continue;
+                }
                 float RPM, TPS, ADV_F, O2_F, VE_F, LAMBDA_F, ADV_R, O2_R, VE_R, LAMBDA_R;
-                float.TryParse(hdxRecord.RPM, out RPM);
+                float.TryParse(hdxRecord.RPM,out RPM);
                 float.TryParse(hdxRecord.TPS, out TPS);
                 float.TryParse(hdxRecord.LAMBDA_F, out LAMBDA_F);
                 float.TryParse(hdxRecord.LAMBDA_R, out LAMBDA_R);
@@ -287,7 +297,7 @@ namespace ProjectCS
                 float.TryParse(hdxRecord.VE_R, out ADV_R);
                 for (int i = 0; i < rpm.Length; i++)
                 {
-                    if (RPM >= float.Parse(rpm[i - 1 == -1 ? 0: i-1]))
+                    if (RPM >= float.Parse(rpm[i - 1 == -1 ? 0 : i - 1]))
                     {
                         if (RPM <= float.Parse(rpm[i]) && RPM > 0)
                         {
@@ -367,10 +377,9 @@ namespace ProjectCS
         private void CalculateVEs_Front(int i, int j, float front_adv, float front_o2, /*float front_ve,*/  float lambda)
         {
             //สูตรคำนวณ 
-            float New_VEs = ((float)-9.486 + ((float)0.48*(front_adv)) + ((float)1.93*(front_o2)) + ((float)1.049 * (float.Parse(dataSetVeFront[i,j]))) + ((float)1.805 * (lambda)));
+            float New_VEs = ((float)-9.486 + ((float)0.48 * (front_adv)) + ((float)1.93 * (front_o2)) + ((float)1.049 * (float.Parse(dataSetVeFront[i, j]))) + ((float)1.805 * (lambda)));
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Front[i, j] = New_VEs_str;
-            radioButton2.Enabled = true;
         }
         private void CalculateVEs_Rear(int i, int j, float rear_adv, float rear_o2, /*float front_ve,*/  float lambda)
         {
@@ -378,7 +387,6 @@ namespace ProjectCS
             float New_VEs = ((float)-9.486 + ((float)0.48 * (rear_adv)) + ((float)1.93 * (rear_o2)) + ((float)1.049 * (float.Parse(dataSetVeRear[i, j]))) + ((float)1.805 * (lambda)));
             string New_VEs_str = New_VEs.ToString("0.0");
             NewVEs_Rear[i, j] = New_VEs_str;
-            radioButton2.Enabled = true;
         }
         private Color GetCellColor(float veValue)
         {
@@ -396,7 +404,7 @@ namespace ProjectCS
             string cellValue = dgv.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
             if (!string.IsNullOrEmpty(cellValue) && float.TryParse(cellValue, out float veValue))
             {
-                Color cellColor = GetCellColor(Math.Min(veValue,100));
+                Color cellColor = GetCellColor(Math.Min(veValue, 100));
                 e.CellStyle.BackColor = cellColor;
             }
             else
